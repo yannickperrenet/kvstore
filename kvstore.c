@@ -21,16 +21,24 @@ void destroyStore(struct Store *store) {
     store->keys = NULL;
     free(store->values);
     store->values = NULL;
+    free(store->values_ptr);
+    store->values_ptr = NULL;
 }
 
 
 // The int 0 (zero) means that the key is not yet initialized
 struct Store initialize(void) {
     struct Store store;
+    // TODO: Make these args to the func. --> Test for out of storage.
     store.key_size = 8;
     store.num_keys = 5;
+    store.values_total_size = 1000;  // #chars it can store
+
+    store.values_size = 0;  // offset in buffer
+
     store.keys = (char *)calloc(store.num_keys * store.key_size, 1);
-    store.values = (char *)calloc(store.num_keys * store.key_size, 1);
+    store.values_ptr = (char **)calloc(store.num_keys, sizeof(char *));
+    store.values = (char *)malloc(store.values_total_size);
 
     if (store.keys == NULL || store.values == NULL) {
         destroyStore(&store);
@@ -49,8 +57,7 @@ char *get(struct Store *store, const char *key) {
     for (int i = 0; i < size; i+=store->key_size) {
         // TODO: use bcmp
         if (strcmp_at(store->keys, key, i) == 0) {
-            char *tmp = store->values;
-            return tmp + i;
+            return store->values_ptr[i];
         }
     }
     fprintf(stderr, "Key not present in store: %s\n", key);
@@ -58,23 +65,33 @@ char *get(struct Store *store, const char *key) {
 }
 
 int insert(struct Store *store, const char *key, const char *value) {
-    if (strlen(key)+1 >= store->key_size || strlen(value)+1 >= store->key_size) {
+    if (strlen(key)+1 > store->key_size) {
         fprintf(
             stderr,
-            "Key or value size too large,"
-            " max size is: %i\n", store->key_size
+            "Key size too large, max size is: %i\n", store->key_size
         );
-        return KV_SIZE_OVERFLOW;
+        return KEY_SIZE_OVERFLOW;
+    }
+    int value_size = strlen(value) + 1;
+    if (value_size > store->values_total_size - store->values_size) {
+        fprintf(stderr, "Not enough storage available to store given value.\n");
+        // TODO: Probably better to not reuse this error.
+        return STORE_OUT_OF_STORAGE;
     }
 
     int size = store->num_keys * store->key_size;
     for (int i = 0; i < size; i+=store->key_size) {
         if (strcmp_at(store->keys, key, i) == 0 || store->keys[i] == 0) {
             strcpy_at(store->keys, key, i);
-            strcpy_at(store->values, value, i);
+
+            // Store value.
+            strcpy_at(store->values, value, store->values_size);
+            store->values_ptr[i] = store->values + store->values_size;
+            store->values_size += value_size;
+
             return 0;
         }
     }
-    fprintf(stderr, "Could not insert item: store already full\n");
+    fprintf(stderr, "Could not insert item: store can't store more keys/values.\n");
     return STORE_FULL_ERR;
 }

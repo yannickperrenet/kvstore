@@ -7,16 +7,21 @@
 
 What can you store? Bytes. ASCII only.
 
+Caveats:
+* Updating the value of an existing key will reduce available store size as the old value is not
+  removed from memory. Instead all values are appended to a buffer in memory and the key simply
+  points to the new location in the buffer.
+
 Initial implementation:
-* Keys and values have a constant, hard-coded, maximum size.
+* Keys have a constant, hard-coded, maximum size.
 
 Next levels of difficulty:
 - [x] Insert to overwrite value of existing key
 - [x] Tests
 - [x] Error handling
 * Expose via HTTP server that listens on port to receive requests for inserting and retrieving keys.
-* Values can have much larger size. The bitcask value can come in here to describe a format for the
-  memory
+- [x] Values can have much larger size. The bitcask value can come in here to describe a format for
+  the memory
 * Hashmap to store keys (that map to values entries of bitcask paper that then map to locations in
   memory)
 

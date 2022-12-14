@@ -32,17 +32,20 @@ TEST_F(StoreTest, UpdateExistingKey) {
 
     insert(&store, "10", "11");
     ASSERT_STREQ(get(&store, "10"), "11");
+
+    // NOTE: This is an implementation detail.
+    ASSERT_EQ(store.values_size, 6);
 }
 
 TEST_F(StoreTest, NotPresentKey) {
     ASSERT_STREQ(get(&store, "10"), NULL);
 }
 
-TEST_F(StoreTest, InsertFullStore) {
+TEST_F(StoreTest, InsertMaxAmountOfKeys) {
     char key[store.key_size];
     for (int i = 0; i < store.num_keys; i++) {
         sprintf(key, "%i", i);
-        insert(&store, key, "value");
+        ASSERT_EQ(insert(&store, key, "value"), 0);
     }
     ASSERT_EQ(insert(&store, "key", "value"), STORE_FULL_ERR);
 }
@@ -53,5 +56,5 @@ TEST_F(StoreTest, KeySizeOverflow) {
     for (int i = 0; i <= overflow_size; i++) {
         cause_overflow[i] = ' ';
     }
-    ASSERT_EQ(insert(&store, cause_overflow, "value"), KV_SIZE_OVERFLOW);
+    ASSERT_EQ(insert(&store, cause_overflow, "value"), KEY_SIZE_OVERFLOW);
 }
