@@ -39,8 +39,8 @@ TEST_F(StoreTest, NotPresentKey) {
 }
 
 TEST_F(StoreTest, InsertFullStore) {
-    char *key;
-    for (int i = 0; i < STORE_NUM_KEYS; i++) {
+    char key[store.key_size];
+    for (int i = 0; i < store.num_keys; i++) {
         sprintf(key, "%i", i);
         insert(&store, key, "value");
     }
@@ -48,7 +48,7 @@ TEST_F(StoreTest, InsertFullStore) {
 }
 
 TEST_F(StoreTest, KeySizeOverflow) {
-    int overflow_size = STORE_KEY_SIZE + 1;
+    int overflow_size = store.key_size + 1;
     char cause_overflow[overflow_size];
     for (int i = 0; i <= overflow_size; i++) {
         cause_overflow[i] = ' ';

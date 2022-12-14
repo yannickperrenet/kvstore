@@ -4,22 +4,16 @@
 
 #include "kvstore.h"
 
-const int STORE_NUM_KEYS = 5;
-// number of bytes per key, including termination byte
-const int STORE_KEY_SIZE = 8;
-
 // Copies the string pointed to by `src` to the buffer pointed to by
 // `dest` at location `at`.
 // Returns a pointer to location `at` in `dest`.
 char *strcpy_at(char *dest, const char *src, int at) {
-    dest += at;
-    return strcpy(dest, src);
+    return strcpy(dest + at, src);
 }
 
 // Same as `strcmp` but at location `at` in `s1`.
 int strcmp_at(const char *s1, const char *s2, int at) {
-    s1 += at;
-    return strcmp(s1, s2);
+    return strcmp(s1 + at, s2);
 }
 
 void destroyStore(struct Store *store) {
@@ -33,8 +27,10 @@ void destroyStore(struct Store *store) {
 // The int 0 (zero) means that the key is not yet initialized
 struct Store initialize(void) {
     struct Store store;
-    store.keys = (char *)calloc(STORE_NUM_KEYS * STORE_KEY_SIZE, 1);
-    store.values = (char *)calloc(STORE_NUM_KEYS * STORE_KEY_SIZE, 1);
+    store.key_size = 8;
+    store.num_keys = 5;
+    store.keys = (char *)calloc(store.num_keys * store.key_size, 1);
+    store.values = (char *)calloc(store.num_keys * store.key_size, 1);
 
     if (store.keys == NULL || store.values == NULL) {
         destroyStore(&store);
@@ -49,8 +45,8 @@ struct Store initialize(void) {
 //
 // Returns NULL if the key isn't found in the store.
 char *get(struct Store *store, const char *key) {
-    int size = STORE_KEY_SIZE * STORE_NUM_KEYS;
-    for (int i = 0; i < size; i+=STORE_KEY_SIZE) {
+    int size = store->key_size * store->num_keys;
+    for (int i = 0; i < size; i+=store->key_size) {
         // TODO: use bcmp
         if (strcmp_at(store->keys, key, i) == 0) {
             char *tmp = store->values;
@@ -62,17 +58,17 @@ char *get(struct Store *store, const char *key) {
 }
 
 int insert(struct Store *store, const char *key, const char *value) {
-    if (strlen(key)+1 >= STORE_KEY_SIZE || strlen(value)+1 >= STORE_KEY_SIZE) {
+    if (strlen(key)+1 >= store->key_size || strlen(value)+1 >= store->key_size) {
         fprintf(
             stderr,
             "Key or value size too large,"
-            " max size is: %i\n", STORE_KEY_SIZE
+            " max size is: %i\n", store->key_size
         );
         return KV_SIZE_OVERFLOW;
     }
 
-    int size = STORE_NUM_KEYS * STORE_KEY_SIZE;
-    for (int i = 0; i < size; i+=STORE_KEY_SIZE) {
+    int size = store->num_keys * store->key_size;
+    for (int i = 0; i < size; i+=store->key_size) {
         if (strcmp_at(store->keys, key, i) == 0 || store->keys[i] == 0) {
             strcpy_at(store->keys, key, i);
             strcpy_at(store->values, value, i);
