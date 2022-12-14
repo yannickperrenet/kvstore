@@ -1,25 +1,24 @@
 # Single-threaded, in-memory, key-value store
 
-* Exposes server to add and delete keys
+* Exposes server to add and get keys
 * Server is single-threaded
 * Key-value pairs are stored in-memory and are never written to disk
 * R/W on store are all done sequentially
 
-What can you store? Bytes.
+What can you store? Bytes. ASCII only.
 
 Initial implementation:
-* Keys have size of `char *`
-* Values have size of `char *`
+* Keys and values have a constant, hard-coded, maximum size.
 
 Next levels of difficulty:
-* Tests
-* Error handling
+- [x] Insert to overwrite value of existing key
+- [x] Tests
+- [x] Error handling
+* Expose via HTTP server that listens on port to receive requests for inserting and retrieving keys.
 * Values can have much larger size. The bitcask value can come in here to describe a format for the
   memory
 * Hashmap to store keys (that map to values entries of bitcask paper that then map to locations in
   memory)
-* Expose via HTTP server that listens on port to receive requests for updating/inserting or
-  retrieving keys.
 
 Specification:
 * #keys you can store
@@ -61,5 +60,3 @@ cmake --build . && ctest
 
 -   Having a `main` function declared in the module I want to test. This results in the test cases
     never being found.
-
-
