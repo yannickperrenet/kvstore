@@ -26,13 +26,12 @@ void destroyStore(struct Store *store) {
 }
 
 
-// The int 0 (zero) means that the key is not yet initialized
-struct Store initialize(void) {
+// 0 (zero) means that the key is not yet initialized
+struct Store initialize(int key_size, int num_keys, int storage_size) {
     struct Store store;
-    // TODO: Make these args to the func. --> Test for out of storage.
-    store.key_size = 8;
-    store.num_keys = 5;
-    store.values_total_size = 1000;  // #chars it can store
+    store.key_size = key_size;
+    store.num_keys = num_keys;
+    store.values_total_size = storage_size;  // #chars it can store
 
     store.values_size = 0;  // offset in buffer
 
@@ -72,10 +71,9 @@ int insert(struct Store *store, const char *key, const char *value) {
         );
         return KEY_SIZE_OVERFLOW;
     }
-    int value_size = strlen(value) + 1;
+    int value_size = strlen(value) + 1;  // +1 for NUL byte
     if (value_size > store->values_total_size - store->values_size) {
         fprintf(stderr, "Not enough storage available to store given value.\n");
-        // TODO: Probably better to not reuse this error.
         return STORE_OUT_OF_STORAGE;
     }
 

@@ -26,7 +26,7 @@ struct Store {
 
 void destroyStore(struct Store *store);
 
-struct Store initialize(void);
+struct Store initialize(int key_size, int num_keys, int storage_size);
 
 char *get(struct Store *store, const char *key);
 

@@ -35,6 +35,8 @@ References:
 * [Hashmap](https://github.com/TheAlgorithms/C/blob/master/data_structures/dictionary/dict.c)
 * https://cliutils.gitlab.io/modern-cmake/
 * https://makefiletutorial.com/
+* [Rob Pike](http://doc.cat-v.org/bell_labs/pikestyle)
+* https://beej.us/guide/bgnet/html/split/system-calls-or-bust.html
 
 
 ## Writing tests
