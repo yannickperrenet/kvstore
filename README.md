@@ -1,59 +1,50 @@
-# Single-threaded, in-memory, key-value store
+# Most basic key-value store I could think of
 
-* Exposes server to add and get keys
-* Server is single-threaded
-* Key-value pairs are stored in-memory and are never written to disk
-* R/W on store are all done sequentially
+> I don't expect anyone to use this piece of "software", I just wanted to play around a bit with
+> the C programming language.
 
-What can you store? Bytes. ASCII only.
+Details:
+* Key-value pairs are stored in-memory and are never written to disk.
+* Store is backed by an array and lookups are done by scanning the array (instead of using a
+  HashMap).
+* Keys/Values are not evicted and thus the store will eventually be full.
+* All values are stored sequentially in one big memory buffer. When updating the value of a key, the
+  old value is never removed and the new value is simply added to the back of the memory buffer
+  (accompanied by an updated pointer for the key). This is similar to the
+  [Bitcask paper](https://riak.com/assets/bitcask-intro.pdf).
 
-Caveats:
-* Updating the value of an existing key will reduce available store size as the old value is not
-  removed from memory. Instead all values are appended to a buffer in memory and the key simply
-  points to the new location in the buffer.
+Why you wouldn't want to actually be using this implementation:
+* Keys/Values are never persisted on disk.
+* When storing a large amount of keys, the lookup of those keys becomes considerably slow.
+* No eviction policy.
 
-Initial implementation:
-* Keys have a constant, hard-coded, maximum size.
-
-Next levels of difficulty:
-- [x] Insert to overwrite value of existing key
-- [x] Tests
-- [x] Error handling
-* Expose via HTTP server that listens on port to receive requests for inserting and retrieving keys.
-- [x] Values can have much larger size. The bitcask value can come in here to describe a format for
-  the memory
-* Hashmap to store keys (that map to values entries of bitcask paper that then map to locations in
-  memory)
-
-Specification:
+Initialization of the store:
 * #keys you can store
 * #bytes for store (only counting the bytes of the values that are stored)
 
-References:
-* https://c-faq.com/
-* https://riak.com/assets/bitcask-intro.pdf
-* [Hashmap](https://github.com/TheAlgorithms/C/blob/master/data_structures/dictionary/dict.c)
-* https://cliutils.gitlab.io/modern-cmake/
-* https://makefiletutorial.com/
-* [Rob Pike](http://doc.cat-v.org/bell_labs/pikestyle)
-* https://beej.us/guide/bgnet/html/split/system-calls-or-bust.html
+## Tests
 
-
-## Writing tests
-
-### Cmake
 ```
+# Install cmake
 sudo apt remove cmake
 pip install cmake
 
-cmake -S . -B build
-
+# Build and run tests
 cmake --build build
 cd build && ctest
+
 # Alternatively you can run: make test
 # Or when inside the build directory:
 cmake --build . && ctest
 ```
+
+## References
+* [`comp.lang.c` Frequently Asked Questions](https://c-faq.com/)
+* [Hashmap](https://github.com/TheAlgorithms/C/blob/master/data_structures/dictionary/dict.c)
+* [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/)
+* [Makefile tutorial](https://makefiletutorial.com/)
+* [Rob Pike on ordering `includes` in C](http://doc.cat-v.org/bell_labs/pikestyle)
+* [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/split/system-calls-or-bust.html)
 
 ## Mistakes I made along the way
 
